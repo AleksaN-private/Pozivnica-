@@ -34,10 +34,20 @@ text{fill:var(--tx);font-size:9px}
 .log div{color:var(--dim);font-size:11px}.log span{color:var(--cy)}
 .foot{grid-column:1/3;display:flex;gap:24px;align-items:center;padding:4px 16px}
 .foot input{accent-color:var(--cy)}
-.pop{position:absolute;left:8%;top:14%;width:380px;z-index:5;border-color:var(--am);box-shadow:0 0 40px #ffb34733}
+.pop{position:absolute;right:3%;bottom:14%;width:380px;z-index:5;border-color:var(--am);box-shadow:0 0 40px #ffb34733}
 .pop h2{color:var(--am)}
 .sp{display:inline-block;width:9px;height:9px;background:var(--am);border-radius:50%;box-shadow:0 0 10px var(--am);vertical-align:middle;animation:pl 1s infinite}
 .note{position:fixed;right:14px;bottom:44px;background:#000a;border:1px dashed var(--dim);padding:6px 10px;font-size:11px;color:var(--dim);z-index:9}
+
+.txtwrap{position:relative}
+.spider{position:absolute;width:64px;height:64px;margin:-42px 0 0 -32px;pointer-events:none;z-index:3;transition:left 1.6s cubic-bezier(.5,0,.3,1),top 1.6s cubic-bezier(.5,0,.3,1);filter:drop-shadow(0 0 6px var(--am))}
+.spider .lg{stroke:var(--am);stroke-width:1.6;fill:none;stroke-linecap:round;transform-origin:23px 23px;animation:wg .35s infinite alternate}
+.spider .lg.b{animation-delay:.17s}
+.spider .bd{fill:#2a1a05;stroke:var(--am);stroke-width:1.5}
+.spider .ey{fill:var(--cy)}
+@keyframes wg{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.sc{background:#3df0ff22;box-shadow:0 1px 0 var(--cy)}
+.trail{position:absolute;height:2px;background:linear-gradient(90deg,transparent,var(--am));pointer-events:none}
 </style>
 </head>
 <body>
@@ -51,12 +61,13 @@ text{fill:var(--tx);font-size:9px}
 <div class="left">
  <div class="p">
   <h2>◢ Glavni pauk — tekst: Nikola Tesla <span class="sp"></span></h2>
-  <div class="txt">
+  <div class="txtwrap"><div class="txt" id="t">
    Nikola Tesla (1856–1943) bio je srpski pronalazač, <a class="vis">inženjer elektrotehnike</a> i <a class="vis">futurista</a>.
    Rođen u <a class="vis">Smiljanu</a>, radio je u <span class="cur">Budimpešti</span> i <a>Parizu</a>, a zatim u
    <a>Njujorku</a> gde je sarađivao sa <a>Tomasom Edisonom</a>. Poznat je po <a>naizmeničnoj struji</a>,
    <a>Teslinom kalemu</a> i radu na <a>bežičnom prenosu energije</a>.
   </div>
+  <svg class="spider" id="sp" viewBox="0 0 46 46"><g class="lg"><path d="M23 23L8 10M23 23L4 22M23 23L8 36M23 23L14 44"/></g><g class="lg b"><path d="M23 23L38 10M23 23L42 22M23 23L38 36M23 23L32 44"/></g><ellipse class="bd" cx="23" cy="26" rx="6" ry="8"/><circle class="bd" cx="23" cy="16" r="4"/><circle class="ey" cx="21.3" cy="15" r="1"/><circle class="ey" cx="24.7" cy="15" r="1"/></svg></div>
  </div>
  <div class="p log">
   <h2>◢ Dnevnik</h2>
@@ -103,6 +114,14 @@ text{fill:var(--tx);font-size:9px}
  <input type="range" min="1" max="50" value="20"> <em style="color:var(--am)">20</em>
  <span class="stat">▮▮ pauza · brzina ▮▮▮▯ · reset</span>
 </div>
-<div class="note">MOCKUP — statično, bez logike. Klik na čvor = ovaj popup.</div>
+<div class="note">MOCKUP — bez prave logike (pauk samo demo-šeta). Klik na čvor = ovaj popup.</div>
+<script>
+// samo demo kretanja pauka u mockupu: ide od linka do linka i boji tekst koji je prešao
+const w=document.querySelector('.txtwrap'),sp=document.getElementById('sp'),L=[...w.querySelectorAll('.txt a,.txt .cur')];let i=0;
+function go(){const e=L[i%L.length],r=e.getBoundingClientRect(),b=w.getBoundingClientRect();
+ sp.style.left=(r.left-b.left+r.width/2)+'px';sp.style.top=(r.top-b.top+r.height/2+6)+'px';
+ L.slice(0,i%L.length+1).forEach(x=>x.classList.add('sc'));if(i%L.length==L.length-1)setTimeout(()=>L.forEach(x=>x.classList.remove('sc')),1500);i++;}
+go();setInterval(go,1900);
+</script>
 </body>
 </html>
