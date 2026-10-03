@@ -17,7 +17,9 @@ body:before{content:"";position:fixed;inset:0;background:repeating-linear-gradie
 .top input{flex:1;background:#0006;border:1px solid var(--cy2);color:var(--tx);padding:5px 10px;font:inherit}
 .top button{background:var(--cy2);color:#001;border:0;padding:6px 14px;font:inherit;font-weight:700;cursor:pointer}
 .stat{color:var(--dim)}.stat em{color:var(--am);font-style:normal}
-.txt{line-height:1.9;color:#8fb8c0}
+.txt{line-height:2.6;font-size:17px;color:#8fb8c0}
+.lp{display:flex;flex-direction:column}.lp .txtwrap{flex:1;min-height:0}#cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.txt a{transition:all .3s}.txt a.glow{color:#fff;background:#3df0ff44;box-shadow:0 0 14px var(--cy);border-color:#fff}.txt a.opened{color:#201000;background:var(--am);box-shadow:0 0 18px var(--am);border-color:var(--am)}
 .txt a{color:var(--cy);border-bottom:1px solid var(--cy2);text-decoration:none}
 .txt a.vis{color:var(--am);border-color:var(--am)}
 .txt .cur{background:#3df0ff33;outline:1px solid var(--cy);padding:0 2px}
@@ -59,15 +61,14 @@ text{fill:var(--tx);font-size:9px}
 </div>
 
 <div class="left">
- <div class="p">
+ <div class="p lp">
   <h2>◢ Glavni pauk — tekst: Nikola Tesla <span class="sp"></span></h2>
-  <div class="txtwrap"><div class="txt" id="t">
-   Nikola Tesla (1856–1943) bio je srpski pronalazač, <a class="vis">inženjer elektrotehnike</a> i <a class="vis">futurista</a>.
-   Rođen u <a class="vis">Smiljanu</a>, radio je u <span class="cur">Budimpešti</span> i <a>Parizu</a>, a zatim u
+  <div class="txtwrap"><canvas id="cv"></canvas><div class="txt" id="t">
+   Nikola Tesla (1856–1943) bio je srpski pronalazač, <a>inženjer elektrotehnike</a> i <a>futurista</a>.
+   Rođen u <a>Smiljanu</a>, radio je u <span class="cur">Budimpešti</span> i <a>Parizu</a>, a zatim u
    <a>Njujorku</a> gde je sarađivao sa <a>Tomasom Edisonom</a>. Poznat je po <a>naizmeničnoj struji</a>,
    <a>Teslinom kalemu</a> i radu na <a>bežičnom prenosu energije</a>.
-  </div>
-  <svg class="spider" id="sp" viewBox="0 0 46 46"><g class="lg"><path d="M23 23L8 10M23 23L4 22M23 23L8 36M23 23L14 44"/></g><g class="lg b"><path d="M23 23L38 10M23 23L42 22M23 23L38 36M23 23L32 44"/></g><ellipse class="bd" cx="23" cy="26" rx="6" ry="8"/><circle class="bd" cx="23" cy="16" r="4"/><circle class="ey" cx="21.3" cy="15" r="1"/><circle class="ey" cx="24.7" cy="15" r="1"/></svg></div>
+  </div></div>
  </div>
  <div class="p log">
   <h2>◢ Dnevnik</h2>
@@ -114,14 +115,65 @@ text{fill:var(--tx);font-size:9px}
  <input type="range" min="1" max="50" value="20"> <em style="color:var(--am)">20</em>
  <span class="stat">▮▮ pauza · brzina ▮▮▮▯ · reset</span>
 </div>
-<div class="note">MOCKUP — bez prave logike (pauk samo demo-šeta). Klik na čvor = ovaj popup.</div>
+<div class="note">MOCKUP — bez prave logike (demo koračanja pauka od nanobitova). Klik na čvor = ovaj popup.</div>
 <script>
-// samo demo kretanja pauka u mockupu: ide od linka do linka i boji tekst koji je prešao
-const w=document.querySelector('.txtwrap'),sp=document.getElementById('sp'),L=[...w.querySelectorAll('.txt a,.txt .cur')];let i=0;
-function go(){const e=L[i%L.length],r=e.getBoundingClientRect(),b=w.getBoundingClientRect();
- sp.style.left=(r.left-b.left+r.width/2)+'px';sp.style.top=(r.top-b.top+r.height/2+6)+'px';
- L.slice(0,i%L.length+1).forEach(x=>x.classList.add('sc'));if(i%L.length==L.length-1)setTimeout(()=>L.forEach(x=>x.classList.remove('sc')),1500);i++;}
-go();setInterval(go,1900);
+// MOCKUP: pauk od nanobitova, 8 nogu (IK), koračanje i pipanje linkova — samo demo, bez pravog crawlera
+const wrap=document.querySelector('.txtwrap'),cv=document.getElementById('cv'),ctx=cv.getContext('2d'),logEl=document.querySelector('.log h2');
+const links=[...wrap.querySelectorAll('.txt a')];let W,H,dpr;
+function rs(){dpr=devicePixelRatio||1;W=wrap.clientWidth;H=wrap.clientHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',rs);rs();
+const rect=a=>{const r=a.getBoundingClientRect(),b=wrap.getBoundingClientRect();return{x:r.left-b.left,y:r.top-b.top,w:r.width,h:r.height}};
+const L1=50,L2=58,HX=[14,5,-5,-14],FX=[56,28,-14,-50],LAT=[46,60,60,48];
+const sp={x:40,y:H*.7,a:0,vx:0,vy:0};
+const legs=[];for(let k=0;k<4;k++)for(const s of[-1,1])legs.push({k,s,g:(k+(s>0?1:0))%2,fx:0,fy:0,st:null,tap:0});
+const rnd=(n,f)=>Array.from({length:n},()=>f());
+const abd=rnd(300,()=>{const t=Math.random()*6.283,r=Math.sqrt(Math.random());return{x:-17+Math.cos(t)*r*19,y:Math.sin(t)*r*14,p:Math.random()*9}});
+const thx=rnd(150,()=>{const t=Math.random()*6.283,r=Math.sqrt(Math.random());return{x:9+Math.cos(t)*r*11,y:Math.sin(t)*r*9,p:Math.random()*9}});
+const rip=[],burst=[];let T=0,idx=0,mode='walk',dwell=0,tapT=0,wait=0;
+const rot=(x,y,a)=>[x*Math.cos(a)-y*Math.sin(a),x*Math.sin(a)+y*Math.cos(a)];
+const hipW=l=>{const[x,y]=rot(HX[l.k],l.s*9,sp.a);return[sp.x+x,sp.y+y]};
+const restW=l=>{const[x,y]=rot(FX[l.k]+14*0,l.s*LAT[l.k],sp.a);return[sp.x+x+sp.vx*.28,sp.y+y+sp.vy*.28]};
+legs.forEach(l=>{const[x,y]=restW(l);l.fx=x;l.fy=y});
+function log(t){const d=document.createElement('div');d.innerHTML='<span>[live]</span> '+t;logEl.after(d)}
+function land(l){rip.push({x:l.fx,y:l.fy,t:0});for(const a of links){const r=rect(a);if(l.fx>r.x-6&&l.fx<r.x+r.w+6&&l.fy>r.y-6&&l.fy<r.y+r.h+6){if(!a.classList.contains('opened')){a.classList.add('glow');clearTimeout(a._t);a._t=setTimeout(()=>a.classList.remove('glow'),700)}}}}
+function step(l,tx,ty,dur){l.st={fx:l.fx,fy:l.fy,tx,ty,t:0,d:dur||.17}}
+function frame(now){const dt=Math.min(.04,(now-(frame.l||now))/1000);frame.l=now;T+=dt;ctx.clearRect(0,0,W,H);
+ const tg=links[idx];let tr=tg&&rect(tg),px=sp.x,py=sp.y;
+ if(mode==='walk'&&tr){const gx=tr.x+tr.w/2,gy=tr.y+tr.h/2+10,dx=gx-sp.x,dy=gy-sp.y,d=Math.hypot(dx,dy);
+  if(d<16){mode='dwell';dwell=1.6;tapT=0;sp.vx=sp.vy=0}else{const v=Math.min(78,d*3+20);sp.vx=dx/d*v;sp.vy=dy/d*v;sp.x+=sp.vx*dt;sp.y+=sp.vy*dt;
+   let da=Math.atan2(dy,dx)-sp.a;da=Math.atan2(Math.sin(da),Math.cos(da));sp.a+=da*Math.min(1,dt*5)}}
+ else if(mode==='dwell'){dwell-=dt;tapT-=dt;
+  if(tapT<=0){tapT=.26;for(const l of legs)if(l.k===0&&!l.st){const t=rect(tg);const[hx,hy]=hipW(l);let x=t.x+Math.random()*t.w,y=t.y+t.h*.3+Math.random()*t.h*.6;const dd=Math.hypot(x-hx,y-hy);if(dd>L1+L2-6){x=hx+(x-hx)/dd*(L1+L2-6);y=hy+(y-hy)/dd*(L1+L2-6)}step(l,x,y,.12)}}
+  if(!tg.classList.contains('glow')&&dwell<1.2)tg.classList.add('glow');
+  if(dwell<=0){tg.classList.remove('glow');tg.classList.add('opened');log('pauk rođen na „'+tg.textContent+'“ (nit krenula)');
+   for(let i=0;i<60;i++){const t=Math.random()*6.28,v=40+Math.random()*120;burst.push({x:tr.x+tr.w/2,y:tr.y+tr.h/2,vx:Math.cos(t)*v,vy:Math.sin(t)*v,l:1})}
+   idx++;mode='walk';if(idx>=links.length){mode='end';wait=2.5}}}
+ else if(mode==='end'){wait-=dt;if(wait<=0){links.forEach(a=>a.classList.remove('opened','glow'));idx=0;mode='walk'}}
+ // noge
+ const busy=[0,0];legs.forEach(l=>{if(l.st)busy[l.g]++});
+ for(const l of legs){const[hx,hy]=hipW(l);
+  if(l.st){l.st.t+=dt/l.st.d;const t=Math.min(1,l.st.t);l.fx=l.st.fx+(l.st.tx-l.st.fx)*t;l.fy=l.st.fy+(l.st.ty-l.st.fy)*t;l.lift=Math.sin(Math.PI*t)*(mode==='dwell'&&l.k===0?16:12);if(t>=1){l.fx=l.st.tx;l.fy=l.st.ty;l.st=null;l.lift=0;land(l)}}
+  else{l.lift=0;const[rx,ry]=restW(l),d=Math.hypot(l.fx-rx,l.fy-ry),far=Math.hypot(l.fx-hx,l.fy-hy)>(L1+L2)*.93;
+   if(!(mode==='dwell'&&l.k===0)&&(d>30||far)&&(!busy[1-l.g]||far)){step(l,rx,ry);busy[l.g]++}}}
+ // crtanje (nanobitovi)
+ ctx.globalCompositeOperation='lighter';
+ const bit=(x,y,sz,c,a)=>{ctx.fillStyle=c;ctx.globalAlpha=a;ctx.fillRect(x-sz/2,y-sz/2,sz,sz)};
+ for(const l of legs){const[hx,hy]=hipW(l),fx=l.fx,fy=l.fy-(l.lift||0);let dx=fx-hx,dy=fy-hy,d=Math.hypot(dx,dy);d=Math.max(Math.abs(L1-L2)+1,Math.min(L1+L2-.5,d));const ux=dx/Math.hypot(dx,dy||1e-6)||0,uy=dy/Math.hypot(dx,dy||1e-6)||0;
+  const aa=(L1*L1-L2*L2+d*d)/(2*d),hh=Math.sqrt(Math.max(0,L1*L1-aa*aa));let kx=hx+ux*aa+(-uy)*hh*-l.s,ky=hy+uy*aa+ux*hh*-l.s;if(ky>Math.min(hy,fy)+ (hh*.2)&&false){}
+  // koleno uvek gore/napolje
+  const k1x=hx+ux*aa-uy*hh,k1y=hy+uy*aa+ux*hh,k2x=hx+ux*aa+uy*hh,k2y=hy+uy*aa-ux*hh;[kx,ky]=(k1y<k2y)?[k1x,k1y]:[k2x,k2y];
+  const seg=(ax,ay,bx,by,ph)=>{const n=Math.max(8,Math.hypot(bx-ax,by-ay)/1.7|0);for(let i=0;i<=n;i++){const t=i/n,j=Math.sin(T*7+i*2.1+ph)*1.3,k=Math.cos(T*6+i*1.7+ph)*1.3;bit(ax+(bx-ax)*t+j,ay+(by-ay)*t+k,i%3?2.1:3,'#3df0ff',.55+.4*Math.sin(T*9+i))}};
+  seg(hx,hy,kx,ky,l.k);seg(kx,ky,fx,fy,l.k+3);
+  for(let i=0;i<7;i++)bit(kx+Math.cos(T*8+i)*2.2,ky+Math.sin(T*8+i*2)*2.2,2.2,'#ffb347',.9);
+  if(l.st||l.k===0&&mode==='dwell')for(let i=0;i<6;i++)bit(fx+Math.cos(T*10+i)*3,fy+Math.sin(T*10+i*2)*3,2,'#fff',.9)}
+ const[ca,sa]=[Math.cos(sp.a),Math.sin(sp.a)],bob=Math.sin(T*10)*(Math.hypot(sp.vx,sp.vy)>5?1.2:.4);
+ const draw=(arr,c)=>{for(const q of arr){const x=q.x+Math.sin(T*3+q.p)*1.6,y=q.y+Math.cos(T*3.7+q.p*1.3)*1.6;bit(sp.x+x*ca-y*sa,sp.y+x*sa+y*ca+bob,2.3,c,.6+.35*Math.sin(T*5+q.p))}};
+ draw(abd,'#3df0ff');draw(thx,'#9ff6ff');
+ for(const s of[-1,1]){const x=17,y=s*4;bit(sp.x+x*ca-y*sa,sp.y+x*sa+y*ca,3.5,'#ffb347',1)}
+ for(let i=rip.length-1;i>=0;i--){const r=rip[i];r.t+=dt;if(r.t>.5){rip.splice(i,1);continue}ctx.globalAlpha=1-r.t*2;ctx.strokeStyle='#3df0ff';ctx.beginPath();ctx.arc(r.x,r.y,4+r.t*34,0,6.28);ctx.stroke()}
+ for(let i=burst.length-1;i>=0;i--){const b=burst[i];b.l-=dt*1.1;if(b.l<=0){burst.splice(i,1);continue}b.x+=b.vx*dt;b.y+=b.vy*dt;b.vx*=.96;b.vy*=.96;bit(b.x,b.y,2,'#ffb347',b.l)}
+ ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
 </script>
 </body>
 </html>
