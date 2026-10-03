@@ -55,12 +55,12 @@ text{fill:var(--tx);font-size:9px}
 .ed2{stroke:#3df0ff66;stroke-width:1;stroke-dasharray:var(--l);stroke-dashoffset:var(--l);animation:dr .6s forwards}.ed2.dup{stroke:var(--am);stroke-opacity:.8}
 @keyframes dr{to{stroke-dashoffset:0}}@keyframes pop{from{transform:scale(0)}}
 .xbtn{float:right;cursor:pointer;color:var(--am)}
-.log{scrollbar-color:var(--cy2) transparent;scrollbar-width:thin}</style>
+.alt{color:var(--cy);cursor:pointer;border-bottom:1px solid var(--cy2)}.log{scrollbar-color:var(--cy2) transparent;scrollbar-width:thin}</style>
 </head>
 <body>
 <div class="p top">
  <b>◈ PAUK</b>
- <input id="q" value="Nikola Tesla" aria-label="Početni članak">
+ <input id="q" value="Nikola Tesla" placeholder="reč ili rečenica…" aria-label="Pojam za pretragu">
  <select id="lg" style="background:#0006;color:var(--tx);border:1px solid var(--cy2);padding:5px"><option value="sr">sr.wikipedia</option><option value="en">en.wikipedia</option></select>
  <button id="go">POKRENI</button>
  <span class="stat">paukova <em id="sA">0</em> · čvorova <em id="sN">0</em> · veza <em id="sE">0</em> · dubina <em id="sD">0</em></span>
@@ -93,7 +93,11 @@ function toCyr(t){let o='';for(let i=0;i<t.length;i++){const c=t[i],lo=c.toLower
 const api=(q)=>'https://'+lang+'.wikipedia.org/w/api.php?format=json&origin=*&formatversion=2&'+q;
 async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 async function parseTry(title){return jget(api('action=parse&redirects=1&disableeditsection=1&prop=text&page='+encodeURIComponent(title)+(lang==='sr'?'&variant=sr-el':'')))}
-async function fetchPage(title){
+async function fetchPage(title,find){
+ if(find){const s=await jget(api('action=query&list=search&srlimit=5&srsearch='+encodeURIComponent(title)));const h=(s.query&&s.query.search)||[];
+  if(!h.length)throw new Error('ništa nije nađeno za „'+title+'“');
+  if(h.length>1)log('ostali rezultati: '+h.slice(1).map(x=>'<a class="alt" data-q="'+esc(x.title)+'">'+esc(x.title)+'</a>').join(' · '));
+  title=h[0].title}
  let j=await parseTry(title);
  if(!j.parse&&j.error&&j.error.code==='missingtitle'){
   if(lang==='sr'){const c=toCyr(title);if(c!==title)j=await parseTry(c)}
@@ -118,7 +122,7 @@ function mkNode(title,parent,a0,a1){const d=parent?parent.depth+1:0,ang=(a0+a1)/
 const vg=$('vg'),eg=$('eg');
 function edge(a,b,dup){const l=document.createElementNS(NS,'line');l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);l.setAttribute('class','ed2'+(dup?' dup':''));l.style.setProperty('--l',Math.hypot(b.x-a.x,b.y-a.y)+2);eg.appendChild(l);edges.push([a,b])}
 function setSt(n,st){n.st=st;n.g.setAttribute('class','vn '+(st==='crawl'||st==='fetch'?'act':st==='done'?'done':st==='err'?'err':''))}
-async function load(n){setSt(n,'fetch');try{const p=await fetchPage(n.title);if(n.st==='dead')return;n.paras=p.paras;n.links=p.links;
+async function load(n){setSt(n,'fetch');try{const p=await fetchPage(n.title,n===root);if(n.st==='dead')return;if(n===root){delete byKey[key(n.title)];n.title=p.title;byKey[key(p.title)]=n;$('ht').textContent=p.title;const tt=n.g.querySelector('title');if(tt)tt.textContent=p.title;log('pauk kreće od članka „'+esc(p.title)+'“')}n.paras=p.paras;n.links=p.links;
   const w=(n.a1-n.a0)/Math.max(1,n.links.length);n.sec=n.links.map((_,i)=>[n.a0+i*w,n.a0+(i+1)*w]);
   if(!n.links.length){setSt(n,'done')}else setSt(n,'crawl');
   if(n.view)n.view.sync()}
@@ -191,8 +195,8 @@ $('px').onclick=closePop;
 // ---------- start / petlja ----------
 function start(){closePop();nodes.forEach(n=>n.st='dead');if(mainView)mainView.destroy();nodes=[];edges=[];byKey={};vg.innerHTML=eg.innerHTML='';$('lg2').innerHTML='';capLogged=false;lang=$('lg').value;
  const t=$('q').value.trim()||'Nikola Tesla';root=mkNode(t,null,0,Math.PI*2);root.x=root.y=0;root.g.innerHTML='<circle class="home" cx="0" cy="0" r="12" style="fill:#ffb34733;stroke:var(--am);stroke-width:2.5"/><text y="-17" text-anchor="middle">HOME</text><title>'+esc(t)+'</title>';root.g.onclick=()=>openPop(root);
- $('ht').textContent=t;mainView=new View($('mainwrap'),root);log('start: „'+esc(t)+'“ ('+lang+'.wikipedia.org)')}
-$('go').onclick=start;$('q').onkeydown=e=>{if(e.key==='Enter')start()};
+ $('ht').textContent=t;mainView=new View($('mainwrap'),root);log('traži „'+esc(t)+'“ na '+lang+'.wikipedia.org')}
+$('lg2').onclick=e=>{const q=e.target.dataset&&e.target.dataset.q;if(q){$('q').value=q;start()}};$('go').onclick=start;$('q').onkeydown=e=>{if(e.key==='Enter')start()};
 $('brk').oninput=e=>$('brkv').textContent=e.target.value;
 $('pz').onclick=()=>{paused=!paused;$('pz').textContent=paused?'▶ nastavi':'⏸ pauza'};
 $('spd').onclick=()=>{speed=speed===1?2:speed===2?4:1;$('spd').textContent='brzina ×'+speed};
