@@ -63,11 +63,12 @@ text{fill:var(--tx);font-size:9px}
 .fin h2{color:var(--am)}.fin .k{color:var(--cy);letter-spacing:.12em;font-size:11px;text-transform:uppercase;margin-top:12px}.fin .src{color:var(--dim);font-size:11px}
 .fin .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.fin button{background:#0008;border:1px solid var(--am);color:var(--am);font:inherit;padding:5px 12px;cursor:pointer}
 #fai{margin-top:12px;color:var(--tx);border-left:2px solid var(--cy);padding-left:10px}
+.vn.ghost circle{fill:none;stroke-opacity:.4;animation:none}.vn.ghost text{display:none!important}.ed2.ghost{stroke-opacity:.18}
 </style>
 </head>
 <body>
 <div class="p top">
- <b>◈ PAUK</b><span class="stat" style="font-size:10px">v8·poenta</span>
+ <b>◈ PAUK</b><span class="stat" style="font-size:10px">v9·krug</span>
  <input id="q" value="Nikola Tesla" placeholder="reč ili rečenica…" aria-label="Pojam za pretragu">
  <select id="lg" style="background:#0006;color:var(--tx);border:1px solid var(--cy2);padding:5px"><option value="sr">sr.wikipedia</option><option value="en">en.wikipedia</option><option value="web">bilo koji sajt (proxy)</option></select>
  <button id="go">POKRENI</button>
@@ -143,9 +144,9 @@ function radius(d){return d?220*(1-Math.exp(-d*.42)):0}
 function mkNode(title,parent,a0,a1){const d=parent?parent.depth+1:0,ang=(a0+a1)/2+(parent?(Math.random()-.5)*(a1-a0)*.3:0),r=radius(d)+(d?(Math.random()-.5)*10:0);
  const n={title,depth:d,parent,a0,a1,x:Math.cos(ang)*r,y:Math.sin(ang)*r,z:d?(Math.random()-.5)*(30+d*45):0,st:'queued',paras:[],links:[],idx:0,tmr:0,kids:[],view:null,tries:0,retryAt:0,off:[10,3],rr:d?Math.max(2.5,8-d*1.3):12};
  const g=document.createElementNS(NS,'g');g.setAttribute('class','vn');g.innerHTML='<circle r="'+n.rr+'"/><text>'+esc(disp(title))+'</text><title>'+esc(disp(title))+'</title>';
- g._n=n;n.g=g;n.c=g.firstChild;n.tx=g.children[1];vg.appendChild(g);nodes.push(n);byKey[key(title)]=n;if(parent)edge(parent,n,false);cam.dirty=true;return n}
+ g._n=n;n.g=g;n.c=g.firstChild;n.tx=g.children[1];vg.appendChild(g);nodes.push(n);byKey[key(title)]=n;if(parent)n.pe=edge(parent,n,false);cam.dirty=true;return n}
 const vg=$('vg'),eg=$('eg'),rg=$('rg');
-function edge(a,b,dup){const l=document.createElementNS(NS,'line');l.setAttribute('class','ed2'+(dup?' dup':''));l._a=a;l._b=b;eg.appendChild(l);edges.push([a,b]);cam.dirty=true}
+function edge(a,b,dup){const l=document.createElementNS(NS,'line');l.setAttribute('class','ed2'+(dup?' dup':''));l._a=a;l._b=b;eg.appendChild(l);edges.push([a,b]);cam.dirty=true;return l}
 // ---------- 3D kamera ----------
 const cam={yaw:0,pitch:.5,dist:700,px:0,py:0,auto:true,dirty:true},clampD=d=>Math.max(90,Math.min(3500,d));
 function proj(x,y,z){const cx=Math.cos(cam.yaw),sx=Math.sin(cam.yaw),x1=x*cx+z*sx,z1=-x*sx+z*cx,cp=Math.cos(cam.pitch),sp=Math.sin(cam.pitch),y2=y*cp-z1*sp,z2=y*sp+z1*cp,den=cam.dist-z2,k=den>40?700/den:-1;return[x1*k+cam.px,y2*k+cam.py,k,z2]}
@@ -171,15 +172,18 @@ function render(){
  $('zi').onclick=()=>{cam.dist=clampD(cam.dist*.75);cam.dirty=true};$('zo').onclick=()=>{cam.dist=clampD(cam.dist/.75);cam.dirty=true};
  $('ar').onclick=()=>setAuto(!cam.auto);$('rs').onclick=()=>{Object.assign(cam,{yaw:0,pitch:.5,dist:700,px:0,py:0,dirty:true})}})();
 function setAuto(v){cam.auto=v;$('ar').style.background=v?'#1a8fa055':'#0008'}
-function setSt(n,st){n.st=st;n.g.setAttribute('class','vn '+(st==='crawl'||st==='fetch'?'act':st==='done'?'done':st==='err'?'err':''))}
+function setSt(n,st){n.st=st;n.g.setAttribute('class','vn '+(st==='ghost'?'ghost':st==='crawl'||st==='fetch'?'act':st==='done'?'done':st==='err'?'err':''))}
 async function load(n){setSt(n,'fetch');inflight++;try{const p=await fetchPage(n.title,n===root);if(n.st==='dead')return;if(n===root){delete byKey[key(n.title)];n.title=p.title;byKey[key(p.title)]=n;$('ht').textContent=disp(p.label);const tt=n.g.querySelector('title');if(tt)tt.textContent=p.label;log('pauk kreće od članka „'+esc(disp(p.title))+'“')}n.label=p.label;if(n!==root){const tt=n.g.querySelector('title');if(tt)tt.textContent=p.label}n.paras=p.paras;n.links=p.links;
   const w=(n.a1-n.a0)/Math.max(1,n.links.length);n.sec=n.links.map((_,i)=>[n.a0+i*w,n.a0+(i+1)*w]);
+  if(n===root&&n.links.length){const per=Math.floor((MAXN-1-n.links.length)/n.links.length);n.links.forEach((t,i)=>{if(byKey[key(t)])return;const c=mkNode(t,n,n.sec[i][0],n.sec[i][1]);c.budget=per;setSt(c,'ghost');c.pe.classList.add('ghost');n.kids.push(c)})}
   if(!n.links.length){setSt(n,'done')}else setSt(n,'crawl');
   if(n.view)n.view.sync()}
  catch(e){if(n.st==='dead')return;if(/HTTP 429|HTTP 5\d\d|Failed to fetch|NetworkError|Load failed|sajt je vratio (429|5)/.test(e.message)&&n.tries<3){n.tries++;n.retryAt=Date.now()+1500*n.tries;setSt(n,'queued');return}setSt(n,'err');{const tt=n.g.querySelector('title');if(tt)tt.textContent=disp(n.title)+' — greška: '+e.message}log('greška „'+esc(disp(n.title))+'“: '+esc(e.message));if(n===root)$('mainwrap').querySelector('.txt').innerHTML='<i>Greška: '+esc(e.message)+'. Ako je u pitanju CORS/mreža, otvori fajl u običnom brauzeru sa internetom.</i>'}finally{inflight--}}
 function openLink(n,i){const t=n.links[i],ex=byKey[key(t)];
+ if(ex&&ex.st==='ghost'&&ex.parent===n){setSt(ex,'queued');ex.pe.classList.remove('ghost');log('pauk rođen na „'+esc(disp(t))+'“ (dubina 1, iz „'+esc(disp(n.title))+'“)');return}
  if(ex){if(ex!==n&&!edges.some(e=>e[0]===n&&e[1]===ex)){edge(n,ex,true);log('„'+esc(disp(t))+'“ već postoji → nova veza, bez novog čvora')}return}
  if(nodes.length>=MAXN){if(!capLogged){capLogged=true;log('dostignut limit od '+MAXN+' čvorova (zaštita prikaza)')}return}
+ {let a=n;while(a&&a.depth>1)a=a.parent;if(a&&a.depth===1){if(a.budget<=0)return;a.budget--}}
  const s=n.sec[i];const c=mkNode(t,n,s[0],s[1]);n.kids.push(c);log('pauk rođen na „'+esc(disp(t))+'“ (dubina '+c.depth+', iz „'+esc(disp(n.title))+'“)')}
 function sched(dt){let free=+$('brk').value-act();
  for(const n of nodes){if(free<=0)break;if(n.st==='queued'&&Date.now()>=n.retryAt&&inflight<(mode==='web'?4:6)){load(n);free--}}
