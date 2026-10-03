@@ -23,7 +23,7 @@ body:before{content:"";position:fixed;inset:0;background:repeating-linear-gradie
 .txt a{color:var(--cy);border-bottom:1px solid var(--cy2);text-decoration:none}
 .txt a.vis{color:var(--am);border-color:var(--am)}
 .txt .cur{background:#3df0ff33;outline:1px solid var(--cy);padding:0 2px}
-.left{display:grid;grid-template-rows:1fr 150px;gap:10px;min-height:0}
+.left{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1.2fr);gap:10px;min-height:0}
 svg{width:100%;height:100%}
 .ring{fill:none;stroke:#3df0ff22;stroke-dasharray:3 5}
 .ed{stroke:#3df0ff55;stroke-width:1}
@@ -64,11 +64,13 @@ text{fill:var(--tx);font-size:9px}
 .fin .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.fin button{background:#0008;border:1px solid var(--am);color:var(--am);font:inherit;padding:5px 12px;cursor:pointer}
 #fai{margin-top:12px;color:var(--tx);border-left:2px solid var(--cy);padding-left:10px}
 .vn.ghost circle{fill:none;stroke-opacity:.4;animation:none}.vn.ghost text{display:none!important}.ed2.ghost{stroke-opacity:.18}
+.tab{cursor:pointer;margin-right:16px;color:var(--dim)}.tab.on{color:var(--cy)}.chg{animation:chg 3s}@keyframes chg{from{background:#ffb34766}}
+#lp2 div{color:var(--tx);font-size:13px;line-height:1.5}#lp2 .k,#fb .k{color:var(--cy);font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:8px}#lp2 .src,#fb .src{color:var(--dim);font-size:11px}.sc{padding:2px 4px}
 </style>
 </head>
 <body>
 <div class="p top">
- <b>◈ PAUK</b><span class="stat" style="font-size:10px">v9·krug</span>
+ <b>◈ PAUK</b><span class="stat" style="font-size:10px">v11·uživo</span>
  <input id="q" value="Nikola Tesla" placeholder="reč ili rečenica…" aria-label="Pojam za pretragu">
  <select id="lg" style="background:#0006;color:var(--tx);border:1px solid var(--cy2);padding:5px"><option value="sr">sr.wikipedia</option><option value="en">en.wikipedia</option><option value="web">bilo koji sajt (proxy)</option></select>
  <button id="go">POKRENI</button>
@@ -77,7 +79,7 @@ text{fill:var(--tx);font-size:9px}
 <div class="left">
  <div class="p lp"><h2>◢ Glavni pauk — <span id="ht"></span> <span class="sp"></span></h2>
   <div class="txtwrap" id="mainwrap"></div></div>
- <div class="p log" style="overflow:auto"><h2>◢ Dnevnik</h2><div id="lg2"></div></div>
+ <div class="p log" style="overflow:auto"><h2><span class="tab on" id="t1">◢ Poenta uživo</span><span class="tab" id="t2">◢ Dnevnik</span><span class="stat" id="plive"></span></h2><div id="lp2"></div><div id="lg2" style="display:none"></div></div>
 </div>
 <div class="p netp"><h2>◢ Mreža — 3D radar (klik na čvor = prozor u tog pauka)</h2>
  <div class="nav"><button id="zi" title="zum +">＋</button><button id="zo" title="zum −">−</button><button id="ar">⟳ auto</button><button id="rs" title="vrati pogled">↺</button></div>
@@ -123,10 +125,10 @@ async function fetchPage(title,find){
  const doc=new DOMParser().parseFromString(j.parse.text,'text/html');
  const wl=c=>{const h=c.getAttribute('href')||'';return h.startsWith('/wiki/')&&!h.slice(6).includes(':')?decodeURIComponent(h.slice(6).split('#')[0]).replace(/_/g,' '):null};
  const pg=buildPage(doc.querySelectorAll('.mw-parser-output > p'),wl);pg.title=j.parse.title;pg.label=j.parse.title;return pg}
-function buildPage(ps,linkOf){const links=[],seen={};
+function buildPage(ps,linkOf){const links=[],seen={},inl={};
  function walk(n){let o='';for(const c of n.childNodes){if(c.nodeType===3)o+=esc(disp(c.textContent));else if(c.nodeType===1){const tg=c.tagName;
   if(tg==='SUP'||tg==='STYLE'||tg==='SCRIPT')continue;
-  if(tg==='A'){const t=linkOf(c);if(t&&c.textContent.trim()){if(!seen[key(t)]){seen[key(t)]=1;if(links.length<30)links.push(t)}o+='<a data-t="'+esc(t)+'">'+esc(disp(c.textContent))+'</a>';continue}o+=esc(disp(c.textContent))}
+  if(tg==='A'){const t=linkOf(c);if(t&&c.textContent.trim()){if(!seen[key(t)]){seen[key(t)]=1;if(links.length<30){links.push(t);inl[key(t)]=1}}if(inl[key(t)]){o+='<a data-t="'+esc(t)+'">'+esc(disp(c.textContent))+'</a>';continue}}o+=esc(disp(c.textContent))}
   else o+=walk(c)}}return o}
  const paras=[];for(const p of ps){if(p.textContent.trim().length<40)continue;paras.push(walk(p));if(paras.length>=8||links.length>=30)break}
  const shown=paras.join('');return{paras,links:links.filter(t=>shown.includes('data-t="'+esc(t)+'"'))}}
@@ -250,7 +252,7 @@ $('px').onclick=closePop;
 
 // ---------- POENTA ----------
 let finished=false;
-const STOP=new Set('takođe između tokom nakon prema zbog njegov njegova njegovo njihov njihova njena kojih kojim kojoj nekoliko drugi druga druge ovaj ovom ovog ovih među pored preko ispod iznad prvi prva prvo većina mnogi mnoge'.split(' '));
+const STOP=new Set('which their there these those about other where while would could should between during after before being through because within without among against under over also such more most many some when what that this with from have been were they them than then into only both each very can may might will has had does did'.split(' ').concat('takođe između tokom nakon prema zbog njegov njegova njegovo njihov njihova njena kojih kojim kojoj nekoliko drugi druga druge ovaj ovom ovog ovih među pored preko ispod iznad prvi prva prvo većina mnogi mnoge'.split(' ')));
 const textOf=n=>{const d=document.createElement('div');d.innerHTML=n.paras.join(' ');return d.textContent.replace(/\s+/g,' ').trim()};
 function summarize(){
  const wt=nodes.filter(n=>n.paras&&n.paras.length);if(!wt.length)return null;
@@ -260,18 +262,29 @@ function summarize(){
  for(const s of sents){const ws=s.x.toLowerCase().split(/[^\p{L}\d]+/u).filter(w=>w.length>4&&!STOP.has(w));let sc=0;for(const w of ws)sc+=Math.log(1+(tf[w]||0));sc/=Math.sqrt(ws.length+3);sc*=.5+s.w;if(qw.some(w=>s.x.toLowerCase().includes(w)))sc*=1.4;s.sc=sc}
  const used=[],pick=(re)=>{const c=sents.filter(s=>re.test(s.x)&&!used.includes(s)).sort((a,b)=>b.sc-a.sc)[0];if(c)used.push(c);return c};
  const what=sents.filter(s=>s.n===root).sort((a,b)=>a.i-b.i)[0]||sents.slice().sort((a,b)=>b.sc-a.sc)[0];if(what)used.push(what);
- const when=pick(/nastal|nastao|nastanak|osnovan|poreklo|potiče|prvi put|istorij|izum|uveden|\b(1\d{3}|20[0-2]\d)\b|vek/i);
- const why=pick(/služi|koristi|svrha|namena|cilj|funkcij|omogućava|zato|razlog|zbog|uzrok/i);
- const secret=pick(/tajn|kontrovers|malo poznat|mit\b|zanimljiv|neobičn|otkri|skriven|spor\b|navodn|legend/i);
+ const when=pick(/origin|emerged|first (identified|reported|described|detected)|discovered|founded|history|nastal|nastao|nastanak|osnovan|poreklo|potiče|prvi put|istorij|izum|uveden|\b(1\d{3}|20[0-2]\d)\b|vek/i);
+ const why=pick(/used (to|for)|purpose|aim\b|function|allows|reason|cause|služi|koristi|svrha|namena|cilj|funkcij|omogućava|zato|razlog|zbog|uzrok/i);
+ const secret=pick(/controvers|myth|conspiracy|unknown|mystery|secret|debate|theor|tajn|kontrovers|malo poznat|mit\b|zanimljiv|neobičn|otkri|skriven|spor\b|navodn|legend/i);
+ const cure=pick(/\blek\b|lekov|leči|lečenj|terapij|vakcin|prevencij|zaštit|simptom|dijagnoz|treat|therap|vaccin|drug|cure|medicat|prevent|symptom|diagnos|antivir|antibiotic/i);
+ const key3=sents.filter(x=>!used.includes(x)).sort((a,b)=>b.sc-a.sc).filter((x,i,arr)=>arr.findIndex(y=>y.n===x.n)===i).slice(0,3);
  const ind=new Map();edges.forEach(([a,b])=>ind.set(b,(ind.get(b)||0)+1));
  const top=[...ind.entries()].filter(([n])=>n!==root).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>disp(n.label||n.title)+' ('+c+')');
  const depth=nodes.reduce((m,n)=>Math.max(m,n.depth),0);
- return{what,when,why,secret,top,info:wt.length+' tekstova, '+nodes.length+' čvorova, '+edges.length+' veza, dubina '+depth}}
-const sec=(k,s,none)=>'<div class="k">'+k+'</div>'+(s?'<div>'+esc(s.x)+' <span class="src">— iz „'+esc(disp(s.n.label||s.n.title))+'“</span></div>':'<div class="src">'+none+'</div>');
-function showFin(){const r=summarize();if(!r)return;$('fai').innerHTML='';$('fh').textContent='◢ POENTA — '+disp(root.label||root.title);
- $('fb').innerHTML=sec('Šta je',r.what,'nije nađeno')+sec('Kako i kada je nastalo',r.when,'nije nađeno u pročitanim tekstovima')+sec('Zašto i čemu služi',r.why,'nije nađeno u pročitanim tekstovima')+sec('Tajne / zanimljivosti',r.secret,'nije nađeno u pročitanim tekstovima')
- +'<div class="k">Najpovezaniji pojmovi (gde se paukovi najčešće susreću)</div><div>'+(r.top.map(esc).join(' · ')||'—')+'</div><div class="src" style="margin-top:12px">Izvučeno iz '+r.info+'. Rečenice su izdvojene iz pročitanih tekstova, ne prerađene — za sažetak običnim rečima koristi dugme „AI poenta“.</div>';
- $('fin').style.display='block'}
+ return{what,when,why,cure,secret,key3,top,info:wt.length+' tekstova, '+nodes.length+' čvorova, '+edges.length+' veza, dubina '+depth}}
+const hsh=t=>{let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))|0;return h};
+const sec=(id,k,s,none)=>{const v=s?esc(s.x)+' <span class="src">— iz „'+esc(disp(s.n.label||s.n.title))+'“</span>':'<span class="src">'+none+'</span>';return '<div class="sc" data-k="'+id+'" data-v="'+hsh(v)+'"><div class="k">'+k+'</div><div>'+v+'</div></div>'};
+function poHTML(r){const key3=r.key3.map(x=>'<div>• '+esc(x.x)+' <span class="src">— iz „'+esc(disp(x.n.label||x.n.title))+'“</span></div>').join('')||'<div class="src">—</div>',top=(r.top.map(esc).join(' · ')||'—');
+ return sec('w','Šta je',r.what,'još nije nađeno')+sec('o','Kako i kada je nastalo',r.when,'još nije nađeno u pročitanim tekstovima')+sec('y','Zašto i čemu služi',r.why,'još nije nađeno u pročitanim tekstovima')+(r.cure?sec('c','Lek, lečenje i zaštita',r.cure,''):'')+sec('s','Tajne / zanimljivosti',r.secret,'još nije nađeno u pročitanim tekstovima')
+ +'<div class="sc" data-k="z" data-v="'+hsh(key3)+'"><div class="k">Bitni zaključci</div>'+key3+'</div>'
+ +'<div class="sc" data-k="t" data-v="'+hsh(top)+'"><div class="k">Najpovezaniji pojmovi</div><div>'+top+'</div></div><div class="src" style="margin-top:10px">Izvučeno iz '+r.info+'. Rečenice su izdvojene iz tekstova, ne prerađene — za sažetak običnim rečima koristi „AI poenta“.</div>'}
+// živa poenta: osvežava se dok paukovi rade, izmenjene stavke zasvetle
+const lastV={};let lastCnt=-1;
+function paint(el,html){el.innerHTML=html;el.querySelectorAll('.sc').forEach(e=>{const k=e.dataset.k;if(lastV[k]!==undefined&&lastV[k]!==e.dataset.v)e.classList.add('chg');lastV[k]=e.dataset.v})}
+function livePo(force){if(!root)return;const c=nodes.filter(n=>n.paras&&n.paras.length).length;if(!force&&c===lastCnt)return;lastCnt=c;const r=summarize();if(!r)return;
+ $('plive').textContent='● uživo · '+r.info;const h=poHTML(r);paint($('lp2'),h);if($('fin').style.display==='block')paint($('fb'),h)}
+function showFin(){livePo(true);$('fai').innerHTML='';$('fh').textContent='◢ POENTA — '+disp(root.label||root.title);$('fin').style.display='block'}
+$('t1').onclick=()=>{$('lp2').style.display='';$('lg2').style.display='none';$('t1').classList.add('on');$('t2').classList.remove('on')};
+$('t2').onclick=()=>{$('lg2').style.display='';$('lp2').style.display='none';$('t2').classList.add('on');$('t1').classList.remove('on')};
 async function aiPoenta(){const box=$('fai');box.textContent='Claude piše poentu…';
  try{const sel=nodes.filter(n=>n.paras&&n.paras.length).sort((a,b)=>a.depth-b.depth),texts=[];let tot=0;for(const n of sel){const t=textOf(n).slice(0,900);if(tot+t.length>40000||texts.length>=40)break;tot+=t.length;texts.push({title:disp(n.label||n.title),text:t})}
   let r;try{r=await fetch('http://localhost:8787/poenta',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:disp(root.label||root.title),texts})})}catch(e){throw new Error('proxy nije pokrenut (pokreni-proxy.bat)')}
@@ -281,7 +294,7 @@ $('fa').onclick=aiPoenta;$('fx').onclick=()=>$('fin').style.display='none';$('sg
 $('fc').onclick=()=>{const t=$('fh').textContent+'\n'+$('fb').innerText+'\n'+$('fai').innerText;navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>$('fc').textContent='kopirano ✓')};
 function checkFinish(){if(finished||!root||root.st==='err'||nodes.some(n=>n.st==='queued'||n.st==='fetch'||n.st==='crawl'))return;if(root.st!=='done')return;finished=true;log('svi paukovi su završili — poenta je spremna');showFin()}
 // ---------- start / petlja ----------
-function start(){closePop();nodes.forEach(n=>n.st='dead');if(mainView)mainView.destroy();nodes=[];edges=[];byKey={};vg.innerHTML=eg.innerHTML='';$('lg2').innerHTML='';capLogged=false;finished=false;$('fin').style.display='none';const sel=$('lg').value;mode=sel==='web'?'web':'wiki';lang=mode==='web'?'sr':sel;
+function start(){closePop();nodes.forEach(n=>n.st='dead');if(mainView)mainView.destroy();nodes=[];edges=[];byKey={};vg.innerHTML=eg.innerHTML='';$('lg2').innerHTML='';capLogged=false;finished=false;lastCnt=-1;for(const k in lastV)delete lastV[k];$('lp2').innerHTML='';$('plive').textContent='';$('fin').style.display='none';const sel=$('lg').value;mode=sel==='web'?'web':'wiki';lang=mode==='web'?'sr':sel;
  let t=$('q').value.trim()||'Nikola Tesla';if(mode==='web'){try{t=normUrl(t)}catch(e){$('mainwrap').innerHTML='<div class="txt"><i>'+esc(e.message)+'</i></div>';log('greška: '+esc(e.message));return}}
  root=mkNode(t,null,0,Math.PI*2);root.x=root.y=0;root.g.innerHTML='<circle class="home" r="12" style="fill:#ffb34733;stroke:var(--am);stroke-width:2.5"/><text text-anchor="middle">HOME</text><title>'+esc(t)+'</title>';root.c=root.g.firstChild;root.tx=root.g.children[1];root.off=[0,-17];Object.assign(cam,{yaw:0,pitch:.5,dist:700,px:0,py:0,dirty:true});setAuto(true);
  $('ht').textContent=t;mainView=new View($('mainwrap'),root);log(mode==='web'?'kreće sa adrese '+esc(disp(t)):'traži „'+esc(t)+'“ na '+lang+'.wikipedia.org')}
@@ -292,7 +305,7 @@ $('spd').onclick=()=>{speed=speed===1?2:speed===2?4:1;$('spd').textContent='brzi
 addEventListener('resize',()=>{mainView&&mainView.sync();popView&&popView.sync()});
 let last=0,acc=0;function loop(now){const dt=Math.min(.05,(now-(last||now))/1000)*speed;last=now;if(!paused){sched(dt);if(cam.auto)cam.yaw+=dt*.12;mainView&&mainView.frame(dt);popView&&popView.frame(dt)}
  if(cam.auto||cam.dirty)render();
- acc+=dt;if(acc>.3){checkFinish();acc=0;$('sA').textContent=act();$('sN').textContent=nodes.length;$('sE').textContent=edges.length;$('sD').textContent=nodes.reduce((m,n)=>Math.max(m,n.depth),0);
+ acc+=dt;if(acc>.3){checkFinish();livePo();acc=0;$('sA').textContent=act();$('sN').textContent=nodes.length;$('sE').textContent=edges.length;$('sD').textContent=nodes.reduce((m,n)=>Math.max(m,n.depth),0);
   if(popNode)$('ps').innerHTML='dubina <em>'+popNode.depth+'</em> · linkova <em>'+popNode.links.length+'</em> · obrađeno <em>'+popNode.idx+'</em> · stanje <em>'+popNode.st+'</em>'}
  requestAnimationFrame(loop)}
 start();requestAnimationFrame(loop);

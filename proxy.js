@@ -11,9 +11,9 @@ async function poenta(req, res, h) {
   const corpus = texts.map(t => '### ' + t.title + '\n' + t.text).join('\n\n').slice(0, 60000);
   const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', signal: AbortSignal.timeout(60000),
     headers: { 'x-api-key': KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model: MODEL, max_tokens: 700,
+    body: JSON.stringify({ model: MODEL, max_tokens: 900,
       system: 'Pišeš na srpskom (latinica), kratko i direktno. Koristi ISKLJUČIVO priložene tekstove. Ako nešto nije u tekstovima, napiši „nije u izvorima“ — ništa ne izmišljaj.',
-      messages: [{ role: 'user', content: 'Pojam koji je korisnik tražio: „' + query + '“.\nNa osnovu tekstova koje su paukovi pročitali napiši POENTU u 3–5 rečenica: šta je to, kako i kada je nastalo, zašto i čemu služi, i šta je najvažnije/najmanje poznato iza toga.\n\n' + corpus }] }) });
+      messages: [{ role: 'user', content: 'Pojam koji je korisnik tražio: „' + query + '“.\nNa osnovu tekstova koje su paukovi pročitali napiši POENTU u 4–7 rečenica: šta je to, kako i kada je nastalo, zašto i čemu služi, ako je u pitanju bolest ili stanje — kakav je lek, lečenje i zaštita, i šta je najvažnije ili najmanje poznato iza toga. Na kraju dodaj 2–3 kratka bitna zaključka.\n\n' + corpus }] }) });
   const j = await r.json();
   if (!r.ok) throw new Error((j.error && j.error.message) || ('Anthropic API ' + r.status));
   res.writeHead(200, { ...h, 'Content-Type': 'text/plain; charset=utf-8' });
