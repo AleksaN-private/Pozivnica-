@@ -87,9 +87,18 @@ const act=()=>nodes.filter(n=>n.st==='fetch'||n.st==='crawl').length;
 const T0=Date.now();
 function log(t){const d=document.createElement('div');const s=((Date.now()-T0)/1000|0);d.innerHTML='<span>['+String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+']</span> '+t;$('lg2').prepend(d);while($('lg2').children.length>60)$('lg2').lastChild.remove()}
 // ---------- Wikipedia ----------
+const LC={a:'а',b:'б',v:'в',g:'г',d:'д',đ:'ђ',e:'е',ž:'ж',z:'з',i:'и',j:'ј',k:'к',l:'л',m:'м',n:'н',o:'о',p:'п',r:'р',s:'с',t:'т',ć:'ћ',u:'у',f:'ф',h:'х',c:'ц',č:'ч',š:'ш'};
+function toCyr(t){let o='';for(let i=0;i<t.length;i++){const c=t[i],lo=c.toLowerCase(),two=t.slice(i,i+2).toLowerCase();let r;
+ if(two==='lj'||two==='nj'||two==='dž'){r=two==='lj'?'љ':two==='nj'?'њ':'џ';i++}else r=LC[lo];if(!r){o+=c;continue}o+=c!==lo?r.toUpperCase():r}return o}
+const api=(q)=>'https://'+lang+'.wikipedia.org/w/api.php?format=json&origin=*&formatversion=2&'+q;
+async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+async function parseTry(title){return jget(api('action=parse&redirects=1&disableeditsection=1&prop=text&page='+encodeURIComponent(title)+(lang==='sr'?'&variant=sr-el':'')))}
 async function fetchPage(title){
- const u='https://'+lang+'.wikipedia.org/w/api.php?action=parse&format=json&origin=*&redirects=1&disableeditsection=1&formatversion=2&prop=text&page='+encodeURIComponent(title)+(lang==='sr'?'&variant=sr-el':'');
- const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j.parse)throw new Error(j.error&&j.error.info||'nema članka');
+ let j=await parseTry(title);
+ if(!j.parse&&j.error&&j.error.code==='missingtitle'){
+  if(lang==='sr'){const c=toCyr(title);if(c!==title)j=await parseTry(c)}
+  if(!j.parse){const s=await jget(api('action=query&list=search&srlimit=1&srsearch='+encodeURIComponent(title)));const h=s.query&&s.query.search&&s.query.search[0];if(h){j=await parseTry(h.title)}}}
+ if(!j.parse)throw new Error(j.error&&j.error.info||'nema članka');
  const doc=new DOMParser().parseFromString(j.parse.text,'text/html'),links=[],seen={};
  function walk(n){let o='';for(const c of n.childNodes){if(c.nodeType===3)o+=esc(c.textContent);else if(c.nodeType===1){const tg=c.tagName;
   if(tg==='SUP'||tg==='STYLE'||tg==='SCRIPT')continue;
