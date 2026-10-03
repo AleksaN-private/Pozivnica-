@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pauk — mockup</title>
+<style>
+:root{--bg:#050a10;--cy:#3df0ff;--cy2:#1a8fa0;--am:#ffb347;--tx:#bfeaf0;--dim:#4d7a85}
+*{box-sizing:border-box;margin:0}
+body{background:radial-gradient(ellipse at 60% 40%,#0a1a26,#050a10 70%);color:var(--tx);font:13px/1.5 ui-monospace,Consolas,monospace;height:100vh;overflow:hidden;display:grid;grid-template-columns:1fr 1.1fr;grid-template-rows:44px 1fr 34px;gap:10px;padding:10px}
+body:before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(0deg,#0000 0 3px,#3df0ff08 3px 4px);pointer-events:none}
+.p{position:relative;background:linear-gradient(160deg,#0b2230cc,#07141dcc);border:1px solid var(--cy2);
+ clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);padding:12px 16px;overflow:hidden;backdrop-filter:blur(6px)}
+.p>h2{font-size:11px;letter-spacing:.2em;color:var(--cy);margin-bottom:8px;text-transform:uppercase}
+.top{grid-column:1/3;display:flex;align-items:center;gap:14px;padding:6px 16px}
+.top b{color:var(--cy);letter-spacing:.3em}
+.top input{flex:1;background:#0006;border:1px solid var(--cy2);color:var(--tx);padding:5px 10px;font:inherit}
+.top button{background:var(--cy2);color:#001;border:0;padding:6px 14px;font:inherit;font-weight:700;cursor:pointer}
+.stat{color:var(--dim)}.stat em{color:var(--am);font-style:normal}
+.txt{line-height:2.6;font-size:17px;color:#8fb8c0}
+.lp{display:flex;flex-direction:column}.lp .txtwrap{flex:1;min-height:0}#cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.txt a{transition:all .3s}.txt a.glow{color:#fff;background:#3df0ff44;box-shadow:0 0 14px var(--cy);border-color:#fff}.txt a.opened{color:#201000;background:var(--am);box-shadow:0 0 18px var(--am);border-color:var(--am)}
+.txt a{color:var(--cy);border-bottom:1px solid var(--cy2);text-decoration:none}
+.txt a.vis{color:var(--am);border-color:var(--am)}
+.txt .cur{background:#3df0ff33;outline:1px solid var(--cy);padding:0 2px}
+.left{display:grid;grid-template-rows:1fr 150px;gap:10px;min-height:0}
+svg{width:100%;height:100%}
+.ring{fill:none;stroke:#3df0ff22;stroke-dasharray:3 5}
+.ed{stroke:#3df0ff55;stroke-width:1}
+.nd{fill:#07141d;stroke:var(--cy);stroke-width:1.5}
+.nd.act{stroke:var(--am);animation:pl 1.2s infinite}
+.nd.done{fill:#3df0ff33}
+.nd.home{fill:#ffb34733;stroke:var(--am);stroke-width:2.5}
+text{fill:var(--tx);font-size:9px}
+@keyframes pl{50%{stroke-width:4;stroke-opacity:.4}}
+.log div{color:var(--dim);font-size:11px}.log span{color:var(--cy)}
+.foot{grid-column:1/3;display:flex;gap:24px;align-items:center;padding:4px 16px}
+.foot input{accent-color:var(--cy)}
+.pop{position:absolute;right:3%;bottom:14%;width:380px;z-index:5;border-color:var(--am);box-shadow:0 0 40px #ffb34733}
+.pop h2{color:var(--am)}
+.sp{display:inline-block;width:9px;height:9px;background:var(--am);border-radius:50%;box-shadow:0 0 10px var(--am);vertical-align:middle;animation:pl 1s infinite}
+.note{position:fixed;right:14px;bottom:44px;background:#000a;border:1px dashed var(--dim);padding:6px 10px;font-size:11px;color:var(--dim);z-index:9}
+
+.txtwrap{position:relative}
+.spider{position:absolute;width:64px;height:64px;margin:-42px 0 0 -32px;pointer-events:none;z-index:3;transition:left 1.6s cubic-bezier(.5,0,.3,1),top 1.6s cubic-bezier(.5,0,.3,1);filter:drop-shadow(0 0 6px var(--am))}
+.spider .lg{stroke:var(--am);stroke-width:1.6;fill:none;stroke-linecap:round;transform-origin:23px 23px;animation:wg .35s infinite alternate}
+.spider .lg.b{animation-delay:.17s}
+.spider .bd{fill:#2a1a05;stroke:var(--am);stroke-width:1.5}
+.spider .ey{fill:var(--cy)}
+@keyframes wg{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.sc{background:#3df0ff22;box-shadow:0 1px 0 var(--cy)}
+.trail{position:absolute;height:2px;background:linear-gradient(90deg,transparent,var(--am));pointer-events:none}
+.vn{cursor:pointer}.vn circle{fill:#07141d;stroke:var(--cy);stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:pop .5s ease-out}
+.vn.act circle{stroke:var(--am);animation:pop .5s ease-out,pl 1s .5s infinite}.vn.done circle{fill:#3df0ff44}.vn:hover circle{stroke:#fff}
+.ed2{stroke:#3df0ff66;stroke-width:1;stroke-dasharray:var(--l);stroke-dashoffset:var(--l);animation:dr .6s forwards}.ed2.dup{stroke:var(--am);stroke-opacity:.8}
+@keyframes dr{to{stroke-dashoffset:0}}@keyframes pop{from{transform:scale(0)}}
+.xbtn{float:right;cursor:pointer;color:var(--am)}
+</style>
+</head>
+<body>
+<div class="p top">
+ <b>◈ PAUK</b>
+ <input value="Nikola Tesla" aria-label="Početni članak">
+ <button>POKRENI</button>
+ <span class="stat">paukova <em id="sA">0</em> · čvorova <em id="sN">1</em> · veza <em id="sE">0</em> · dubina <em id="sD">0</em></span>
+</div>
+
+<div class="left">
+ <div class="p lp">
+  <h2>◢ Glavni pauk — tekst: Nikola Tesla <span class="sp"></span></h2>
+  <div class="txtwrap"><canvas id="cv"></canvas><div class="txt" id="t">
+   Nikola Tesla (1856–1943) bio je srpski pronalazač, <a>inženjer elektrotehnike</a> i <a>futurista</a>.
+   Rođen u <a>Smiljanu</a>, radio je u <span class="cur">Budimpešti</span> i <a>Parizu</a>, a zatim u
+   <a>Njujorku</a> gde je sarađivao sa <a>Tomasom Edisonom</a>. Poznat je po <a>naizmeničnoj struji</a>,
+   <a>Teslinom kalemu</a> i radu na <a>bežičnom prenosu energije</a>.
+  </div></div>
+ </div>
+ <div class="p log">
+  <h2>◢ Dnevnik</h2>
+  <div><span>[00:12]</span> pauk#07 rođen na „Smiljan“ (dubina 2)</div>
+  <div><span>[00:11]</span> „Tomas Edison“ već postoji → nova veza, bez novog čvora</div>
+  <div><span>[00:10]</span> pauk#05 završio „Pariz“ — 14 linkova</div>
+  <div><span>[00:08]</span> kočnica: 14 / 20 aktivnih paukova</div>
+ </div>
+</div>
+
+<div class="p">
+ <h2>◢ Mreža — radar po dubini</h2>
+ <svg viewBox="0 0 600 460" id="net"><g transform="translate(300 230)" id="ng"><circle class="ring" r="60"/><circle class="ring" r="120"/><circle class="ring" r="180"/><circle class="ring" r="225"/><g id="eg"></g><g id="vg"></g><circle class="nd home" r="12"/><text y="-17" text-anchor="middle">HOME</text></g></svg>
+</div>
+
+<div class="p pop" id="pop" style="display:none"><h2 id="ph"></h2><div class="txt" id="pt"></div><div class="stat" style="margin-top:8px" id="ps"></div></div>
+
+<div class="p foot">
+ <span>KOČNICA aktivnih paukova</span>
+ <input type="range" id="brk" min="1" max="30" value="8"> <em id="brkv" style="color:var(--am)">8</em>
+ <span class="stat">▮▮ pauza · brzina ▮▮▮▯ · reset</span>
+</div>
+<div class="note">MOCKUP — bez prave logike (demo koračanja pauka od nanobitova). Klik na čvor = prozor u tog pauka.</div>
+<script>
+// MOCKUP: pauk od nanobitova, 8 nogu (IK), koračanje i pipanje linkova — samo demo, bez pravog crawlera
+const wrap=document.querySelector('.txtwrap'),cv=document.getElementById('cv'),ctx=cv.getContext('2d'),logEl=document.querySelector('.log h2');
+const links=[...wrap.querySelectorAll('.txt a')];let W,H,dpr;
+function rs(){dpr=devicePixelRatio||1;W=wrap.clientWidth;H=wrap.clientHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',rs);rs();
+const rect=a=>{const r=a.getBoundingClientRect(),b=wrap.getBoundingClientRect();return{x:r.left-b.left,y:r.top-b.top,w:r.width,h:r.height}};
+const L1=50,L2=58,HX=[14,5,-5,-14],FX=[56,28,-14,-50],LAT=[46,60,60,48];
+const sp={x:40,y:H*.7,a:0,vx:0,vy:0};
+const legs=[];for(let k=0;k<4;k++)for(const s of[-1,1])legs.push({k,s,g:(k+(s>0?1:0))%2,fx:0,fy:0,st:null,tap:0});
+const rnd=(n,f)=>Array.from({length:n},()=>f());
+const abd=rnd(300,()=>{const t=Math.random()*6.283,r=Math.sqrt(Math.random());return{x:-17+Math.cos(t)*r*19,y:Math.sin(t)*r*14,p:Math.random()*9}});
+const thx=rnd(150,()=>{const t=Math.random()*6.283,r=Math.sqrt(Math.random());return{x:9+Math.cos(t)*r*11,y:Math.sin(t)*r*9,p:Math.random()*9}});
+const rip=[],burst=[];let T=0,idx=0,mode='walk',dwell=0,tapT=0,wait=0;
+const rot=(x,y,a)=>[x*Math.cos(a)-y*Math.sin(a),x*Math.sin(a)+y*Math.cos(a)];
+const hipW=l=>{const[x,y]=rot(HX[l.k],l.s*9,sp.a);return[sp.x+x,sp.y+y]};
+const restW=l=>{const[x,y]=rot(FX[l.k]+14*0,l.s*LAT[l.k],sp.a);return[sp.x+x+sp.vx*.28,sp.y+y+sp.vy*.28]};
+legs.forEach(l=>{const[x,y]=restW(l);l.fx=x;l.fy=y});
+function log(t){const d=document.createElement('div');d.innerHTML='<span>[live]</span> '+t;logEl.after(d)}
+function land(l){rip.push({x:l.fx,y:l.fy,t:0});for(const a of links){const r=rect(a);if(l.fx>r.x-6&&l.fx<r.x+r.w+6&&l.fy>r.y-6&&l.fy<r.y+r.h+6){if(!a.classList.contains('opened')){a.classList.add('glow');clearTimeout(a._t);a._t=setTimeout(()=>a.classList.remove('glow'),700)}}}}
+function step(l,tx,ty,dur){l.st={fx:l.fx,fy:l.fy,tx,ty,t:0,d:dur||.17}}
+function frame(now){const dt=Math.min(.04,(now-(frame.l||now))/1000);frame.l=now;T+=dt;ctx.clearRect(0,0,W,H);
+ const tg=links[idx];let tr=tg&&rect(tg),px=sp.x,py=sp.y;
+ if(mode==='walk'&&tr){const gx=tr.x+tr.w/2,gy=tr.y+tr.h/2+10,dx=gx-sp.x,dy=gy-sp.y,d=Math.hypot(dx,dy);
+  if(d<16){mode='dwell';dwell=1.6;tapT=0;sp.vx=sp.vy=0}else{const v=Math.min(78,d*3+20);sp.vx=dx/d*v;sp.vy=dy/d*v;sp.x+=sp.vx*dt;sp.y+=sp.vy*dt;
+   let da=Math.atan2(dy,dx)-sp.a;da=Math.atan2(Math.sin(da),Math.cos(da));sp.a+=da*Math.min(1,dt*5)}}
+ else if(mode==='dwell'){dwell-=dt;tapT-=dt;
+  if(tapT<=0){tapT=.26;for(const l of legs)if(l.k===0&&!l.st){const t=rect(tg);const[hx,hy]=hipW(l);let x=t.x+Math.random()*t.w,y=t.y+t.h*.3+Math.random()*t.h*.6;const dd=Math.hypot(x-hx,y-hy);if(dd>L1+L2-6){x=hx+(x-hx)/dd*(L1+L2-6);y=hy+(y-hy)/dd*(L1+L2-6)}step(l,x,y,.12)}}
+  if(!tg.classList.contains('glow')&&dwell<1.2)tg.classList.add('glow');
+  if(dwell<=0){tg.classList.remove('glow');tg.classList.add('opened');log('pauk rođen na „'+tg.textContent+'“ (nit krenula)');window.netOpen&&netOpen(tg.textContent);
+   for(let i=0;i<60;i++){const t=Math.random()*6.28,v=40+Math.random()*120;burst.push({x:tr.x+tr.w/2,y:tr.y+tr.h/2,vx:Math.cos(t)*v,vy:Math.sin(t)*v,l:1})}
+   idx++;mode='walk';if(idx>=links.length){mode='end';wait=2.5}}}
+ else if(mode==='end'){wait-=dt;if(wait<=0){links.forEach(a=>a.classList.remove('opened','glow'));idx=0;window.netReset&&netReset();mode='walk'}}
+ // noge
+ const busy=[0,0];legs.forEach(l=>{if(l.st)busy[l.g]++});
+ for(const l of legs){const[hx,hy]=hipW(l);
+  if(l.st){l.st.t+=dt/l.st.d;const t=Math.min(1,l.st.t);l.fx=l.st.fx+(l.st.tx-l.st.fx)*t;l.fy=l.st.fy+(l.st.ty-l.st.fy)*t;l.lift=Math.sin(Math.PI*t)*(mode==='dwell'&&l.k===0?16:12);if(t>=1){l.fx=l.st.tx;l.fy=l.st.ty;l.st=null;l.lift=0;land(l)}}
+  else{l.lift=0;const[rx,ry]=restW(l),d=Math.hypot(l.fx-rx,l.fy-ry),far=Math.hypot(l.fx-hx,l.fy-hy)>(L1+L2)*.93;
+   if(!(mode==='dwell'&&l.k===0)&&(d>30||far)&&(!busy[1-l.g]||far)){step(l,rx,ry);busy[l.g]++}}}
+ // crtanje (nanobitovi)
+ ctx.globalCompositeOperation='lighter';
+ const bit=(x,y,sz,c,a)=>{ctx.fillStyle=c;ctx.globalAlpha=a;ctx.fillRect(x-sz/2,y-sz/2,sz,sz)};
+ for(const l of legs){const[hx,hy]=hipW(l),fx=l.fx,fy=l.fy-(l.lift||0);let dx=fx-hx,dy=fy-hy,d=Math.hypot(dx,dy);d=Math.max(Math.abs(L1-L2)+1,Math.min(L1+L2-.5,d));const ux=dx/Math.hypot(dx,dy||1e-6)||0,uy=dy/Math.hypot(dx,dy||1e-6)||0;
+  const aa=(L1*L1-L2*L2+d*d)/(2*d),hh=Math.sqrt(Math.max(0,L1*L1-aa*aa));let kx=hx+ux*aa+(-uy)*hh*-l.s,ky=hy+uy*aa+ux*hh*-l.s;if(ky>Math.min(hy,fy)+ (hh*.2)&&false){}
+  // koleno uvek gore/napolje
+  const k1x=hx+ux*aa-uy*hh,k1y=hy+uy*aa+ux*hh,k2x=hx+ux*aa+uy*hh,k2y=hy+uy*aa-ux*hh;[kx,ky]=(k1y<k2y)?[k1x,k1y]:[k2x,k2y];
+  const seg=(ax,ay,bx,by,ph)=>{const n=Math.max(8,Math.hypot(bx-ax,by-ay)/1.7|0);for(let i=0;i<=n;i++){const t=i/n,j=Math.sin(T*7+i*2.1+ph)*1.3,k=Math.cos(T*6+i*1.7+ph)*1.3;bit(ax+(bx-ax)*t+j,ay+(by-ay)*t+k,i%3?2.1:3,'#3df0ff',.55+.4*Math.sin(T*9+i))}};
+  seg(hx,hy,kx,ky,l.k);seg(kx,ky,fx,fy,l.k+3);
+  for(let i=0;i<7;i++)bit(kx+Math.cos(T*8+i)*2.2,ky+Math.sin(T*8+i*2)*2.2,2.2,'#ffb347',.9);
+  if(l.st||l.k===0&&mode==='dwell')for(let i=0;i<6;i++)bit(fx+Math.cos(T*10+i)*3,fy+Math.sin(T*10+i*2)*3,2,'#fff',.9)}
+ const[ca,sa]=[Math.cos(sp.a),Math.sin(sp.a)],bob=Math.sin(T*10)*(Math.hypot(sp.vx,sp.vy)>5?1.2:.4);
+ const draw=(arr,c)=>{for(const q of arr){const x=q.x+Math.sin(T*3+q.p)*1.6,y=q.y+Math.cos(T*3.7+q.p*1.3)*1.6;bit(sp.x+x*ca-y*sa,sp.y+x*sa+y*ca+bob,2.3,c,.6+.35*Math.sin(T*5+q.p))}};
+ draw(abd,'#3df0ff');draw(thx,'#9ff6ff');
+ for(const s of[-1,1]){const x=17,y=s*4;bit(sp.x+x*ca-y*sa,sp.y+x*sa+y*ca,3.5,'#ffb347',1)}
+ for(let i=rip.length-1;i>=0;i--){const r=rip[i];r.t+=dt;if(r.t>.5){rip.splice(i,1);continue}ctx.globalAlpha=1-r.t*2;ctx.strokeStyle='#3df0ff';ctx.beginPath();ctx.arc(r.x,r.y,4+r.t*34,0,6.28);ctx.stroke()}
+ for(let i=burst.length-1;i>=0;i--){const b=burst[i];b.l-=dt*1.1;if(b.l<=0){burst.splice(i,1);continue}b.x+=b.vx*dt;b.y+=b.vy*dt;b.vx*=.96;b.vy*=.96;bit(b.x,b.y,2,'#ffb347',b.l)}
+ ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+</script>
+<script>
+// MOCKUP mreže: čvor za svaki link koji pauk otvori; pozadinski paukovi rađaju podčvorove; kočnica ograničava aktivne
+const NS='http://www.w3.org/2000/svg',eg=document.getElementById('eg'),vg=document.getElementById('vg'),$=id=>document.getElementById(id);
+const POOL=['Edison','Westinghouse','Njujork','Pariz','Beograd','Smiljan','Lika','Hrvatska','Austrija','Prag','Graz','Budimpešta','Kolorado Springs','Vordenklif','Naizmenična struja','Teslin kalem','Rendgen','Radio','Bežični prenos','Niagara','Majka Đuka','Milutin Tesla','Pupin','Mark Tven','Elektromagnetizam','Rotaciono polje','Kondenzator','Wardenclyffe','Pariska izložba','Svetski sajam','Kapetan Leka','Elektron','Frekvencija','Patent','Telegraf','Marconi','Ajnštajn','Struja','Transformator','Motor']; 
+let N=[],E=[],rootN=0,pump=null;
+const maxAct=()=>+$('brk').value;
+$('brk').oninput=e=>$('brkv').textContent=e.target.value;
+function stats(){$('sA').textContent=N.filter(n=>n.st==='act').length;$('sN').textContent=N.length+1;$('sE').textContent=E.length;$('sD').textContent=Math.max(0,...N.map(n=>n.d))}
+function mk(label,d,parent,ang){const r=[0,72,132,190][d],n={label,d,parent,ang,x:Math.cos(ang)*r,y:Math.sin(ang)*r,st:'act',kids:[]};
+ const g=document.createElementNS(NS,'g');g.setAttribute('class','vn act');g.innerHTML=`<circle cx="${n.x}" cy="${n.y}" r="${[0,8,6,4.5][d]}"/>`+(d<3?`<text x="${n.x+10}" y="${n.y+3}">${label}</text>`:'');g.onclick=()=>showPop(n);vg.appendChild(g);n.g=g;N.push(n);edge(parent,n);return n}
+function edge(a,b,dup){const x1=a?a.x:0,y1=a?a.y:0,l=document.createElementNS(NS,'line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);l.setAttribute('class','ed2'+(dup?' dup':''));l.style.setProperty('--l',Math.hypot(b.x-x1,b.y-y1)+2);eg.appendChild(l);E.push([a,b]);}
+window.netReset=()=>{clearInterval(pump);N=[];E=[];eg.innerHTML=vg.innerHTML='';rootN=0;$('pop').style.display='none';stats();pump=setInterval(work,650)};
+window.netOpen=label=>{const a=Math.PI*2*(rootN++)/11-Math.PI/2;mk(label,1,null,a);stats()};
+function work(){const act=N.filter(n=>n.st==='act');if(!act.length){return}
+ // jedan pauk završava po otkucaju, ostali su "u radu"
+ const n=act[Math.floor(Math.random()*act.length)];n.st='done';n.g.setAttribute('class','vn done');
+ if(n.d<3){const cnt=Math.max(0,Math.round(Math.random()*(n.d===1?3:2)));let free=maxAct()-N.filter(x=>x.st==='act').length;
+  for(let i=0;i<cnt&&free>0;i++){const lab=POOL[Math.floor(Math.random()*POOL.length)];const ex=N.find(x=>x.label===lab);
+   if(ex){if(ex!==n&&!E.some(e=>e[0]===n&&e[1]===ex)&&ex.d>0){edge(n,ex,true);n.kids.push(lab)}}
+   else{const sp=(Math.random()-.5)*(n.d===1?1.5:.9);const k=mk(lab,n.d+1,n,n.ang+sp);n.kids.push(lab);free--}}}
+ stats();if(!$('pop').style.display||$('pop').style.display!=='none')refresh()}
+let cur=null;
+function showPop(n){cur=n;$('pop').style.display='block';refresh()}
+function refresh(){if(!cur)return;const n=cur;$('ph').innerHTML=`◢ pauk — „${n.label}“ <span class="sp"></span><span class="xbtn" onclick="cur=null;$('pop').style.display='none'">✕</span>`;
+ $('pt').innerHTML=n.st==='act'?'<i>pauk još čita tekst… pronađeni linkovi:</i> '+n.kids.map(k=>`<a>${k}</a>`).join(', '):`Tekst članka „${n.label}“ je skeniran. Linkovi: `+(n.kids.map(k=>`<a>${k}</a>`).join(', ')||'—');
+ $('ps').innerHTML=`dubina <em>${n.d}</em> · stanje <em>${n.st==='act'?'radi':'gotov'}</em> · [zatvori — pauk nastavlja]`}
+window.cur=null;netReset();
+// glavni pauk: pri otvaranju linka rađa čvor; pri restartu briše mrežu
+const _log=log;
+</script>
+</body>
+</html>
