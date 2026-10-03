@@ -70,7 +70,7 @@ text{fill:var(--tx);font-size:9px}
 </head>
 <body>
 <div class="p top">
- <b>◈ PAUK</b><span class="stat" style="font-size:10px">v11·uživo</span>
+ <b>◈ PAUK</b><span class="stat" style="font-size:10px">v12·tačno</span>
  <input id="q" value="Nikola Tesla" placeholder="reč ili rečenica…" aria-label="Pojam za pretragu">
  <select id="lg" style="background:#0006;color:var(--tx);border:1px solid var(--cy2);padding:5px"><option value="sr">sr.wikipedia</option><option value="en">en.wikipedia</option><option value="web">bilo koji sajt (proxy)</option></select>
  <button id="go">POKRENI</button>
@@ -111,16 +111,24 @@ const disp=t=>mode==='web'?t.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,''
 const api=(q)=>'https://'+lang+'.wikipedia.org/w/api.php?format=json&origin=*&formatversion=2&'+q;
 async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 async function parseTry(title){return jget(api('action=parse&redirects=1&disableeditsection=1&prop=text&page='+encodeURIComponent(title)))}
+const norm=t=>toLat(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'dj'),toks=t=>norm(t).split(/[^a-z0-9]+/).filter(w=>w.length>1);
+const nf=(msg,alts)=>Object.assign(new Error(msg),{alts});
 async function fetchPage(title,find){
  if(mode==='web')return fetchWeb(title);
- if(find){const s=await jget(api('action=query&list=search&srlimit=5&srsearch='+encodeURIComponent(title)));const h=(s.query&&s.query.search)||[];
-  if(!h.length)throw new Error('ništa nije nađeno za „'+title+'“');
-  if(h.length>1)log('ostali rezultati: '+h.slice(1).map(x=>'<a class="alt" data-q="'+esc(x.title)+'">'+esc(disp(x.title))+'</a>').join(' · '));
-  title=h[0].title}
- let j=await parseTry(title);
- if(!j.parse&&j.error&&j.error.code==='missingtitle'){
-  if(lang==='sr'){const c=toCyr(title);if(c!==title)j=await parseTry(c)}
-  if(!j.parse){const s=await jget(api('action=query&list=search&srlimit=1&srsearch='+encodeURIComponent(title)));const h=s.query&&s.query.search&&s.query.search[0];if(h){j=await parseTry(h.title)}}}
+ let j=null;
+ if(find){const qt=toks(title),sentence=qt.length>=5;
+  if(!sentence){ // ime/pojam: prvo tačan naslov, pa pretraga naslova — nikad „nasumičan“ pogodak
+   j=await parseTry(title);if(!j.parse&&lang==='sr'){const c=toCyr(title);if(c!==title)j=await parseTry(c)}
+   if(!j.parse){const ss=await Promise.all([jget(api('action=query&list=search&srwhat=title&srlimit=5&srsearch='+encodeURIComponent(title))),jget(api('action=query&list=search&srlimit=5&srsearch='+encodeURIComponent(title)))]);
+    const cand=[];for(const r of ss)for(const x of(r.query&&r.query.search)||[])if(!cand.includes(x.title))cand.push(x.title);
+    const hit=cand.find(c=>qt.every(w=>toks(c).includes(w)));
+    if(!hit)throw nf('Na '+lang+'.wikipedia.org nema članka sa imenom „'+title+'“.'+(cand.length?' Najbliži rezultati (nisu isto što si tražio):':''),cand);
+    j=await parseTry(hit)}}
+  else{const s2=await jget(api('action=query&list=search&srlimit=5&srsearch='+encodeURIComponent(title)));const h=(s2.query&&s2.query.search)||[];
+   if(!h.length)throw nf('ništa nije nađeno za „'+title+'“',[]);
+   if(h.length>1)log('ostali rezultati: '+h.slice(1).map(x=>'<a class="alt" data-q="'+esc(x.title)+'">'+esc(disp(x.title))+'</a>').join(' · '));
+   j=await parseTry(h[0].title)}}
+ else j=await parseTry(title);
  if(!j.parse)throw new Error((j.error&&(j.error.code+': '+j.error.info)||'nema članka')+' [tražen naslov: '+title+', '+lang+'.wikipedia]');
  const doc=new DOMParser().parseFromString(j.parse.text,'text/html');
  const wl=c=>{const h=c.getAttribute('href')||'';return h.startsWith('/wiki/')&&!h.slice(6).includes(':')?decodeURIComponent(h.slice(6).split('#')[0]).replace(/_/g,' '):null};
@@ -180,7 +188,7 @@ async function load(n){setSt(n,'fetch');inflight++;try{const p=await fetchPage(n
   if(n===root&&n.links.length){const per=Math.floor((MAXN-1-n.links.length)/n.links.length);n.links.forEach((t,i)=>{if(byKey[key(t)])return;const c=mkNode(t,n,n.sec[i][0],n.sec[i][1]);c.budget=per;setSt(c,'ghost');c.pe.classList.add('ghost');n.kids.push(c)})}
   if(!n.links.length){setSt(n,'done')}else setSt(n,'crawl');
   if(n.view)n.view.sync()}
- catch(e){if(n.st==='dead')return;if(/HTTP 429|HTTP 5\d\d|Failed to fetch|NetworkError|Load failed|sajt je vratio (429|5)/.test(e.message)&&n.tries<3){n.tries++;n.retryAt=Date.now()+1500*n.tries;setSt(n,'queued');return}setSt(n,'err');{const tt=n.g.querySelector('title');if(tt)tt.textContent=disp(n.title)+' — greška: '+e.message}log('greška „'+esc(disp(n.title))+'“: '+esc(e.message));if(n===root)$('mainwrap').querySelector('.txt').innerHTML='<i>Greška: '+esc(e.message)+'. Ako je u pitanju CORS/mreža, otvori fajl u običnom brauzeru sa internetom.</i>'}finally{inflight--}}
+ catch(e){if(n.st==='dead')return;if(/HTTP 429|HTTP 5\d\d|Failed to fetch|NetworkError|Load failed|sajt je vratio (429|5)/.test(e.message)&&n.tries<3){n.tries++;n.retryAt=Date.now()+1500*n.tries;setSt(n,'queued');return}setSt(n,'err');{const tt=n.g.querySelector('title');if(tt)tt.textContent=disp(n.title)+' — greška: '+e.message}log('greška „'+esc(disp(n.title))+'“: '+esc(e.message));if(n===root)$('mainwrap').querySelector('.txt').innerHTML='<i>'+esc(e.message)+'</i>'+(e.alts&&e.alts.length?'<p>'+e.alts.map(x=>'<a class="alt" data-q="'+esc(x)+'">'+esc(disp(x))+'</a>').join(' · ')+'</p><p style="color:var(--dim)">Klik na predlog pokreće pretragu za njega.</p>':'<p style="color:var(--dim)">Ako je u pitanju mreža/CORS, otvori fajl u običnom brauzeru sa internetom.</p>')}finally{inflight--}}
 function openLink(n,i){const t=n.links[i],ex=byKey[key(t)];
  if(ex&&ex.st==='ghost'&&ex.parent===n){setSt(ex,'queued');ex.pe.classList.remove('ghost');log('pauk rođen na „'+esc(disp(t))+'“ (dubina 1, iz „'+esc(disp(n.title))+'“)');return}
  if(ex){if(ex!==n&&!edges.some(e=>e[0]===n&&e[1]===ex)){edge(n,ex,true);log('„'+esc(disp(t))+'“ već postoji → nova veza, bez novog čvora')}return}
@@ -298,7 +306,7 @@ function start(){closePop();nodes.forEach(n=>n.st='dead');if(mainView)mainView.d
  let t=$('q').value.trim()||'Nikola Tesla';if(mode==='web'){try{t=normUrl(t)}catch(e){$('mainwrap').innerHTML='<div class="txt"><i>'+esc(e.message)+'</i></div>';log('greška: '+esc(e.message));return}}
  root=mkNode(t,null,0,Math.PI*2);root.x=root.y=0;root.g.innerHTML='<circle class="home" r="12" style="fill:#ffb34733;stroke:var(--am);stroke-width:2.5"/><text text-anchor="middle">HOME</text><title>'+esc(t)+'</title>';root.c=root.g.firstChild;root.tx=root.g.children[1];root.off=[0,-17];Object.assign(cam,{yaw:0,pitch:.5,dist:700,px:0,py:0,dirty:true});setAuto(true);
  $('ht').textContent=t;mainView=new View($('mainwrap'),root);log(mode==='web'?'kreće sa adrese '+esc(disp(t)):'traži „'+esc(t)+'“ na '+lang+'.wikipedia.org')}
-$('lg2').onclick=e=>{const q=e.target.dataset&&e.target.dataset.q;if(q){$('q').value=q;start()}};$('go').onclick=start;$('q').onkeydown=e=>{if(e.key==='Enter')start()};
+$('mainwrap').onclick=$('lg2').onclick=e=>{const q=e.target.dataset&&e.target.dataset.q;if(q){$('q').value=q;start()}};$('go').onclick=start;$('q').onkeydown=e=>{if(e.key==='Enter')start()};
 $('brk').oninput=e=>$('brkv').textContent=e.target.value;
 $('pz').onclick=()=>{paused=!paused;$('pz').textContent=paused?'▶ nastavi':'⏸ pauza'};
 $('spd').onclick=()=>{speed=speed===1?2:speed===2?4:1;$('spd').textContent='brzina ×'+speed};
