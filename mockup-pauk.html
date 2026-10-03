@@ -50,6 +50,11 @@ text{fill:var(--tx);font-size:9px}
 @keyframes wg{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
 .sc{background:#3df0ff22;box-shadow:0 1px 0 var(--cy)}
 .trail{position:absolute;height:2px;background:linear-gradient(90deg,transparent,var(--am));pointer-events:none}
+.vn{cursor:pointer}.vn circle{fill:#07141d;stroke:var(--cy);stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:pop .5s ease-out}
+.vn.act circle{stroke:var(--am);animation:pop .5s ease-out,pl 1s .5s infinite}.vn.done circle{fill:#3df0ff44}.vn:hover circle{stroke:#fff}
+.ed2{stroke:#3df0ff66;stroke-width:1;stroke-dasharray:var(--l);stroke-dashoffset:var(--l);animation:dr .6s forwards}.ed2.dup{stroke:var(--am);stroke-opacity:.8}
+@keyframes dr{to{stroke-dashoffset:0}}@keyframes pop{from{transform:scale(0)}}
+.xbtn{float:right;cursor:pointer;color:var(--am)}
 </style>
 </head>
 <body>
@@ -57,7 +62,7 @@ text{fill:var(--tx);font-size:9px}
  <b>◈ PAUK</b>
  <input value="Nikola Tesla" aria-label="Početni članak">
  <button>POKRENI</button>
- <span class="stat">paukova <em>14</em> · čvorova <em>63</em> · linkova <em>212</em> · dubina <em>4</em></span>
+ <span class="stat">paukova <em id="sA">0</em> · čvorova <em id="sN">1</em> · veza <em id="sE">0</em> · dubina <em id="sD">0</em></span>
 </div>
 
 <div class="left">
@@ -81,41 +86,17 @@ text{fill:var(--tx);font-size:9px}
 
 <div class="p">
  <h2>◢ Mreža — radar po dubini</h2>
- <svg viewBox="0 0 600 460">
-  <g transform="translate(300 230)">
-   <circle class="ring" r="60"/><circle class="ring" r="120"/><circle class="ring" r="180"/><circle class="ring" r="225"/>
-   <g class="ed">
-    <line x2="0" y2="-60"/><line x2="52" y2="30"/><line x2="-52" y2="30"/><line x2="-60" y2="-5" />
-    <line x1="0" y1="-60" x2="-70" y2="-115"/><line x1="0" y1="-60" x2="40" y2="-120"/><line x1="0" y1="-60" x2="110" y2="-95"/>
-    <line x1="52" y1="30" x2="130" y2="75"/><line x1="52" y1="30" x2="95" y2="130"/>
-    <line x1="-52" y1="30" x2="-120" y2="80"/><line x1="-52" y1="30" x2="-70" y2="135"/>
-    <line x1="-70" y1="-115" x2="-140" y2="-150"/><line x1="40" y1="-120" x2="75" y2="-185"/><line x1="130" y1="75" x2="190" y2="120"/>
-    <line x1="130" y1="75" x2="40" y2="-120"/><line x1="-120" y1="80" x2="-52" y2="30"/>
-   </g>
-   <circle class="nd home" r="12"/><text y="-17" text-anchor="middle">HOME</text>
-   <circle class="nd done" cx="0" cy="-60" r="7"/><text x="10" y="-62">Smiljan</text>
-   <circle class="nd act" cx="52" cy="30" r="7"/><text x="62" y="30">Budimpešta</text>
-   <circle class="nd done" cx="-52" cy="30" r="7"/><text x="-100" y="48">Pariz</text>
-   <circle class="nd" cx="-70" cy="-115" r="5"/><circle class="nd act" cx="40" cy="-120" r="5"/><circle class="nd" cx="110" cy="-95" r="5"/>
-   <circle class="nd done" cx="130" cy="75" r="6"/><text x="138" y="72">Edison</text>
-   <circle class="nd" cx="95" cy="130" r="5"/><circle class="nd" cx="-120" cy="80" r="5"/><circle class="nd" cx="-70" cy="135" r="5"/>
-   <circle class="nd" cx="-140" cy="-150" r="4"/><circle class="nd" cx="75" cy="-185" r="4"/><circle class="nd" cx="190" cy="120" r="4"/>
-  </g>
- </svg>
+ <svg viewBox="0 0 600 460" id="net"><g transform="translate(300 230)" id="ng"><circle class="ring" r="60"/><circle class="ring" r="120"/><circle class="ring" r="180"/><circle class="ring" r="225"/><g id="eg"></g><g id="vg"></g><circle class="nd home" r="12"/><text y="-17" text-anchor="middle">HOME</text></g></svg>
 </div>
 
-<div class="p pop">
- <h2>◢ pauk#07 — „Smiljan“ <span class="sp"></span></h2>
- <div class="txt">Smiljan je selo u <a>Lici</a>, u <a>Hrvatskoj</a>. Ovde je rođen <span class="cur">Nikola Tesla</span>, u porodici <a>pravoslavnog sveštenika</a>…</div>
- <div class="stat" style="margin-top:8px">pronađeno linkova <em>9</em> · rođeno paukova <em>3</em> · [ZATVORI — pauk nastavlja]</div>
-</div>
+<div class="p pop" id="pop" style="display:none"><h2 id="ph"></h2><div class="txt" id="pt"></div><div class="stat" style="margin-top:8px" id="ps"></div></div>
 
 <div class="p foot">
  <span>KOČNICA aktivnih paukova</span>
- <input type="range" min="1" max="50" value="20"> <em style="color:var(--am)">20</em>
+ <input type="range" id="brk" min="1" max="30" value="8"> <em id="brkv" style="color:var(--am)">8</em>
  <span class="stat">▮▮ pauza · brzina ▮▮▮▯ · reset</span>
 </div>
-<div class="note">MOCKUP — bez prave logike (demo koračanja pauka od nanobitova). Klik na čvor = ovaj popup.</div>
+<div class="note">MOCKUP — bez prave logike (demo koračanja pauka od nanobitova). Klik na čvor = prozor u tog pauka.</div>
 <script>
 // MOCKUP: pauk od nanobitova, 8 nogu (IK), koračanje i pipanje linkova — samo demo, bez pravog crawlera
 const wrap=document.querySelector('.txtwrap'),cv=document.getElementById('cv'),ctx=cv.getContext('2d'),logEl=document.querySelector('.log h2');
@@ -145,10 +126,10 @@ function frame(now){const dt=Math.min(.04,(now-(frame.l||now))/1000);frame.l=now
  else if(mode==='dwell'){dwell-=dt;tapT-=dt;
   if(tapT<=0){tapT=.26;for(const l of legs)if(l.k===0&&!l.st){const t=rect(tg);const[hx,hy]=hipW(l);let x=t.x+Math.random()*t.w,y=t.y+t.h*.3+Math.random()*t.h*.6;const dd=Math.hypot(x-hx,y-hy);if(dd>L1+L2-6){x=hx+(x-hx)/dd*(L1+L2-6);y=hy+(y-hy)/dd*(L1+L2-6)}step(l,x,y,.12)}}
   if(!tg.classList.contains('glow')&&dwell<1.2)tg.classList.add('glow');
-  if(dwell<=0){tg.classList.remove('glow');tg.classList.add('opened');log('pauk rođen na „'+tg.textContent+'“ (nit krenula)');
+  if(dwell<=0){tg.classList.remove('glow');tg.classList.add('opened');log('pauk rođen na „'+tg.textContent+'“ (nit krenula)');window.netOpen&&netOpen(tg.textContent);
    for(let i=0;i<60;i++){const t=Math.random()*6.28,v=40+Math.random()*120;burst.push({x:tr.x+tr.w/2,y:tr.y+tr.h/2,vx:Math.cos(t)*v,vy:Math.sin(t)*v,l:1})}
    idx++;mode='walk';if(idx>=links.length){mode='end';wait=2.5}}}
- else if(mode==='end'){wait-=dt;if(wait<=0){links.forEach(a=>a.classList.remove('opened','glow'));idx=0;mode='walk'}}
+ else if(mode==='end'){wait-=dt;if(wait<=0){links.forEach(a=>a.classList.remove('opened','glow'));idx=0;window.netReset&&netReset();mode='walk'}}
  // noge
  const busy=[0,0];legs.forEach(l=>{if(l.st)busy[l.g]++});
  for(const l of legs){const[hx,hy]=hipW(l);
@@ -174,6 +155,36 @@ function frame(now){const dt=Math.min(.04,(now-(frame.l||now))/1000);frame.l=now
  for(let i=burst.length-1;i>=0;i--){const b=burst[i];b.l-=dt*1.1;if(b.l<=0){burst.splice(i,1);continue}b.x+=b.vx*dt;b.y+=b.vy*dt;b.vx*=.96;b.vy*=.96;bit(b.x,b.y,2,'#ffb347',b.l)}
  ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
+</script>
+<script>
+// MOCKUP mreže: čvor za svaki link koji pauk otvori; pozadinski paukovi rađaju podčvorove; kočnica ograničava aktivne
+const NS='http://www.w3.org/2000/svg',eg=document.getElementById('eg'),vg=document.getElementById('vg'),$=id=>document.getElementById(id);
+const POOL=['Edison','Westinghouse','Njujork','Pariz','Beograd','Smiljan','Lika','Hrvatska','Austrija','Prag','Graz','Budimpešta','Kolorado Springs','Vordenklif','Naizmenična struja','Teslin kalem','Rendgen','Radio','Bežični prenos','Niagara','Majka Đuka','Milutin Tesla','Pupin','Mark Tven','Elektromagnetizam','Rotaciono polje','Kondenzator','Wardenclyffe','Pariska izložba','Svetski sajam','Kapetan Leka','Elektron','Frekvencija','Patent','Telegraf','Marconi','Ajnštajn','Struja','Transformator','Motor']; 
+let N=[],E=[],rootN=0,pump=null;
+const maxAct=()=>+$('brk').value;
+$('brk').oninput=e=>$('brkv').textContent=e.target.value;
+function stats(){$('sA').textContent=N.filter(n=>n.st==='act').length;$('sN').textContent=N.length+1;$('sE').textContent=E.length;$('sD').textContent=Math.max(0,...N.map(n=>n.d))}
+function mk(label,d,parent,ang){const r=[0,72,132,190][d],n={label,d,parent,ang,x:Math.cos(ang)*r,y:Math.sin(ang)*r,st:'act',kids:[]};
+ const g=document.createElementNS(NS,'g');g.setAttribute('class','vn act');g.innerHTML=`<circle cx="${n.x}" cy="${n.y}" r="${[0,8,6,4.5][d]}"/>`+(d<3?`<text x="${n.x+10}" y="${n.y+3}">${label}</text>`:'');g.onclick=()=>showPop(n);vg.appendChild(g);n.g=g;N.push(n);edge(parent,n);return n}
+function edge(a,b,dup){const x1=a?a.x:0,y1=a?a.y:0,l=document.createElementNS(NS,'line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);l.setAttribute('class','ed2'+(dup?' dup':''));l.style.setProperty('--l',Math.hypot(b.x-x1,b.y-y1)+2);eg.appendChild(l);E.push([a,b]);}
+window.netReset=()=>{clearInterval(pump);N=[];E=[];eg.innerHTML=vg.innerHTML='';rootN=0;$('pop').style.display='none';stats();pump=setInterval(work,650)};
+window.netOpen=label=>{const a=Math.PI*2*(rootN++)/11-Math.PI/2;mk(label,1,null,a);stats()};
+function work(){const act=N.filter(n=>n.st==='act');if(!act.length){return}
+ // jedan pauk završava po otkucaju, ostali su "u radu"
+ const n=act[Math.floor(Math.random()*act.length)];n.st='done';n.g.setAttribute('class','vn done');
+ if(n.d<3){const cnt=Math.max(0,Math.round(Math.random()*(n.d===1?3:2)));let free=maxAct()-N.filter(x=>x.st==='act').length;
+  for(let i=0;i<cnt&&free>0;i++){const lab=POOL[Math.floor(Math.random()*POOL.length)];const ex=N.find(x=>x.label===lab);
+   if(ex){if(ex!==n&&!E.some(e=>e[0]===n&&e[1]===ex)&&ex.d>0){edge(n,ex,true);n.kids.push(lab)}}
+   else{const sp=(Math.random()-.5)*(n.d===1?1.5:.9);const k=mk(lab,n.d+1,n,n.ang+sp);n.kids.push(lab);free--}}}
+ stats();if(!$('pop').style.display||$('pop').style.display!=='none')refresh()}
+let cur=null;
+function showPop(n){cur=n;$('pop').style.display='block';refresh()}
+function refresh(){if(!cur)return;const n=cur;$('ph').innerHTML=`◢ pauk — „${n.label}“ <span class="sp"></span><span class="xbtn" onclick="cur=null;$('pop').style.display='none'">✕</span>`;
+ $('pt').innerHTML=n.st==='act'?'<i>pauk još čita tekst… pronađeni linkovi:</i> '+n.kids.map(k=>`<a>${k}</a>`).join(', '):`Tekst članka „${n.label}“ je skeniran. Linkovi: `+(n.kids.map(k=>`<a>${k}</a>`).join(', ')||'—');
+ $('ps').innerHTML=`dubina <em>${n.d}</em> · stanje <em>${n.st==='act'?'radi':'gotov'}</em> · [zatvori — pauk nastavlja]`}
+window.cur=null;netReset();
+// glavni pauk: pri otvaranju linka rađa čvor; pri restartu briše mrežu
+const _log=log;
 </script>
 </body>
 </html>
